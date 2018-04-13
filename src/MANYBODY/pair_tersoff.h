@@ -50,6 +50,7 @@ class PairTersoff : public Pair {
     double c5,ca1,ca4;           // added for TersoffMOD
     double powern_del;
     double c0;                   // added for TersoffMODC
+    double chi;                  // added for modified b_ij as in e.g. 10.1016/j.commatsci.2006.06.010
   };
 
   Param *params;                // parameter set for an I-J-K interaction

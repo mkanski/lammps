@@ -391,7 +391,8 @@ double PairTersoff::init_one(int i, int j)
 void PairTersoff::read_file(char *file)
 {
   int params_per_line = 17;
-  char **words = new char*[params_per_line+1];
+  char **words = new char*[params_per_line+2]; //1 additional for optional chi parameter
+  bool chi_is_present=false;
 
   memory->sfree(params);
   params = NULL;
@@ -454,7 +455,10 @@ void PairTersoff::read_file(char *file)
       nwords = atom->count_words(line);
     }
 
-    if (nwords != params_per_line)
+    if (nwords == params_per_line+1)
+        chi_is_present=true;
+
+    if (nwords != params_per_line && !chi_is_present)
       error->all(FLERR,"Incorrect format in Tersoff potential file");
 
     // words = ptrs to all words in line
@@ -502,6 +506,11 @@ void PairTersoff::read_file(char *file)
     params[nparams].bigd = atof(words[14]);
     params[nparams].lam1 = atof(words[15]);
     params[nparams].biga = atof(words[16]);
+    if (chi_is_present)
+        params[nparams].chi = atof(words[17]);
+    else
+        params[nparams].chi = 1.0;
+    
 
     // currently only allow m exponent of 1 or 3
 
@@ -703,13 +712,13 @@ double PairTersoff::ters_fa_d(double r, Param *param)
 double PairTersoff::ters_bij(double zeta, Param *param)
 {
   double tmp = param->beta * zeta;
-  if (tmp > param->c1) return 1.0/sqrt(tmp);
+  if (tmp > param->c1) return param->chi * 1.0/sqrt(tmp);
   if (tmp > param->c2)
-    return (1.0 - pow(tmp,-param->powern) / (2.0*param->powern))/sqrt(tmp);
-  if (tmp < param->c4) return 1.0;
+    return param->chi*(1.0 - pow(tmp,-param->powern) / (2.0*param->powern))/sqrt(tmp);
+  if (tmp < param->c4) return param->chi * 1.0;
   if (tmp < param->c3)
-    return 1.0 - pow(tmp,param->powern)/(2.0*param->powern);
-  return pow(1.0 + pow(tmp,param->powern), -1.0/(2.0*param->powern));
+    return param->chi * (1.0 - pow(tmp,param->powern)/(2.0*param->powern));
+  return param->chi * pow(1.0 + pow(tmp,param->powern), -1.0/(2.0*param->powern));
 }
 
 /* ---------------------------------------------------------------------- */
@@ -717,19 +726,19 @@ double PairTersoff::ters_bij(double zeta, Param *param)
 double PairTersoff::ters_bij_d(double zeta, Param *param)
 {
   double tmp = param->beta * zeta;
-  if (tmp > param->c1) return param->beta * -0.5*pow(tmp,-1.5);
+  if (tmp > param->c1) return param->chi * param->beta * -0.5*pow(tmp,-1.5);
   if (tmp > param->c2)
-    return param->beta * (-0.5*pow(tmp,-1.5) *
+    return param->chi * param->beta * (-0.5*pow(tmp,-1.5) *
                           // error in negligible 2nd term fixed 9/30/2015
                           // (1.0 - 0.5*(1.0 +  1.0/(2.0*param->powern)) *
                           (1.0 - (1.0 +  1.0/(2.0*param->powern)) *
                            pow(tmp,-param->powern)));
   if (tmp < param->c4) return 0.0;
   if (tmp < param->c3)
-    return -0.5*param->beta * pow(tmp,param->powern-1.0);
+    return -param->chi * 0.5*param->beta * pow(tmp,param->powern-1.0);
 
   double tmp_n = pow(tmp,param->powern);
-  return -0.5 * pow(1.0+tmp_n, -1.0-(1.0/(2.0*param->powern)))*tmp_n / zeta;
+  return -param->chi * 0.5 * pow(1.0+tmp_n, -1.0-(1.0/(2.0*param->powern)))*tmp_n / zeta;
 }
 
 /* ---------------------------------------------------------------------- */
