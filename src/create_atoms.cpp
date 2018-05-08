@@ -225,6 +225,11 @@ void CreateAtoms::command(int narg, char **arg)
     onemol->compute_center();
 
     // molecule random number generator, different for each proc
+    
+    if (molseed == 0) { //MK
+        onemol->rotate=false;
+        molseed=1;
+    }
 
     ranmol = new RanMars(lmp,molseed+comm->me);
   }
@@ -821,6 +826,15 @@ void CreateAtoms::add_molecule(double *center, double *quat_user)
   // reset in caller after all molecules created by all procs
   // pass add_molecule_atom an offset of 0 since don't know
   //   max tag of atoms in previous molecules at this point
+  
+  if (onemol->rotate == false) {  //MK
+      for (int q = 0; q < 3; q++)
+          for (int qq = 0; qq < 3; qq++)
+              rotmat[q][qq]=0.0;
+      rotmat[0][0] = 1;
+      rotmat[1][1] = 1;
+      rotmat[2][2] = 1;
+  }
 
   int natoms = onemol->natoms;
   for (int m = 0; m < natoms; m++) {

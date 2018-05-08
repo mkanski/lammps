@@ -27,6 +27,8 @@ class Molecule : protected Pointers {
 
   // number of atoms,bonds,etc in molecule
   // nibody,ndbody = # of integer/double fields in body
+  
+  bool rotate; //MK
 
   int natoms;
   int nbonds,nangles,ndihedrals,nimpropers;

@@ -50,6 +50,8 @@ Molecule::Molecule(LAMMPS *lmp, int narg, char **arg, int &index) :
 {
   me = comm->me;
 
+  rotate=true; //MK
+
   if (index >= narg) error->all(FLERR,"Illegal molecule command");
 
   int n = strlen(arg[0]) + 1;
