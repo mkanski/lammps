@@ -64,6 +64,8 @@ class PairAIREBO : public Pair {
   double *closestdistsq;           // closest owned atom dist to each ghost
   double *nC,*nH;                  // sum of weighting fns with REBO neighs
 
+  double pair_scale;
+
   double smin,Nmin,Nmax,NCmin,NCmax,thmin,thmax;
   double rcmin[2][2],rcmax[2][2],rcmaxsq[2][2],rcmaxp[2][2];
   double Q[2][2],alpha[2][2],A[2][2],rho[2][2],BIJc[2][2][3],Beta[2][2][3];
@@ -123,6 +125,8 @@ class PairAIREBO : public Pair {
   void spline_init();
 
   void allocate();
+
+  virtual void *extract(const char *, int &);
 
   // ----------------------------------------------------------------------
   // S'(t) and S(t) cutoff functions

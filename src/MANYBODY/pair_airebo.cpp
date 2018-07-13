@@ -70,6 +70,8 @@ PairAIREBO::PairAIREBO(LAMMPS *lmp) : Pair(lmp)
   map = NULL;
   manybody_flag = 1;
 
+  pair_scale = 1.0;
+
   sigwid = 0.84;
   sigcut = 3.0;
   sigmin = sigcut - sigwid;
@@ -224,6 +226,7 @@ void PairAIREBO::coeff(int narg, char **arg)
         setflag[i][j] = 1;
         count++;
       }
+
 
   if (count == 0) error->all(FLERR,"Incorrect args for pair coefficients");
 }
@@ -503,7 +506,7 @@ void PairAIREBO::FREBO(int eflag, int vflag)
       bij = bondorder(i,j,del,rij,VA,f,vflag_atom);
       dVAdi = bij*dVA;
 
-      fpair = -(dVRdi+dVAdi) / rij;
+      fpair = -(dVRdi+dVAdi) / rij * pair_scale;
       f[i][0] += delx*fpair;
       f[i][1] += dely*fpair;
       f[i][2] += delz*fpair;
@@ -511,7 +514,7 @@ void PairAIREBO::FREBO(int eflag, int vflag)
       f[j][1] -= dely*fpair;
       f[j][2] -= delz*fpair;
 
-      if (eflag) pvector[0] += evdwl = VR + bij*VA;
+      if (eflag) pvector[0] += evdwl = (VR + bij*VA) * pair_scale;
       if (evflag) ev_tally(i,j,nlocal,newton_pair,
                            evdwl,0.0,fpair,delx,dely,delz);
     }
@@ -793,8 +796,8 @@ void PairAIREBO::FLJ(int eflag, int vflag)
                           delij,rij,f,vflag_atom);
       } else Stb = 0.0;
 
-      fpair = -(dStr * (Stb*cij*VLJ - cij*VLJ) +
-                dVLJ * (Str*Stb*cij + cij - Str*cij)) / rij;
+      fpair = -((dStr * (Stb*cij*VLJ - cij*VLJ) +
+                dVLJ * (Str*Stb*cij + cij - Str*cij)) / rij ) * pair_scale;
 
       f[i][0] += delij[0]*fpair;
       f[i][1] += delij[1]*fpair;
@@ -803,14 +806,14 @@ void PairAIREBO::FLJ(int eflag, int vflag)
       f[j][1] -= delij[1]*fpair;
       f[j][2] -= delij[2]*fpair;
 
-      if (eflag) pvector[1] += evdwl = VA*Stb + (1.0-Str)*cij*VLJ;
+      if (eflag) pvector[1] += evdwl = (VA*Stb + (1.0-Str)*cij*VLJ) * pair_scale;
       if (evflag) ev_tally(i,j,nlocal,newton_pair,
                            evdwl,0.0,fpair,delij[0],delij[1],delij[2]);
 
       if (cij < 1.0) {
         dC = Str*Stb*VLJ + (1.0-Str)*VLJ;
         if (npath == 2) {
-          fpair = dC*dwij / rij;
+          fpair = dC*dwij / rij * pair_scale;
           f[atomi][0] += delij[0]*fpair;
           f[atomi][1] += delij[1]*fpair;
           f[atomi][2] += delij[2]*fpair;
@@ -821,11 +824,11 @@ void PairAIREBO::FLJ(int eflag, int vflag)
           if (vflag_atom) v_tally2(atomi,atomj,fpair,delij);
 
         } else if (npath == 3) {
-          fpair1 = dC*dwikS*wkjS / rikS;
+          fpair1 = dC*dwikS*wkjS / rikS * pair_scale;
           fi[0] = delikS[0]*fpair1;
           fi[1] = delikS[1]*fpair1;
           fi[2] = delikS[2]*fpair1;
-          fpair2 = dC*wikS*dwkjS / rkjS;
+          fpair2 = dC*wikS*dwkjS / rkjS * pair_scale;
           fj[0] = deljkS[0]*fpair2;
           fj[1] = deljkS[1]*fpair2;
           fj[2] = deljkS[2]*fpair2;
@@ -844,17 +847,17 @@ void PairAIREBO::FLJ(int eflag, int vflag)
             v_tally3(atomi,atomj,atomk,fi,fj,delikS,deljkS);
 
         } else if (npath == 4) {
-          fpair1 = dC*dwikS*wkmS*wmjS / rikS;
+          fpair1 = dC*dwikS*wkmS*wmjS / rikS * pair_scale;
           fi[0] = delikS[0]*fpair1;
           fi[1] = delikS[1]*fpair1;
           fi[2] = delikS[2]*fpair1;
 
-          fpair2 = dC*wikS*dwkmS*wmjS / rkmS;
+          fpair2 = dC*wikS*dwkmS*wmjS / rkmS * pair_scale;
           fk[0] = delkmS[0]*fpair2 - fi[0];
           fk[1] = delkmS[1]*fpair2 - fi[1];
           fk[2] = delkmS[2]*fpair2 - fi[2];
 
-          fpair3 = dC*wikS*wkmS*dwmjS / rmjS;
+          fpair3 = dC*wikS*wkmS*dwmjS / rmjS * pair_scale;
           fj[0] = deljmS[0]*fpair3;
           fj[1] = deljmS[1]*fpair3;
           fj[2] = deljmS[2]*fpair3;
@@ -1046,7 +1049,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           Ec = 256.0*ekijl/405.0;
           Vtors = (Ec*(powint(cw2,5)))-(ekijl/10.0);
 
-          if (eflag) pvector[2] += evdwl = Vtors*w21*w23*w34*(1.0-tspjik)*(1.0-tspijl);
+          if (eflag) pvector[2] += evdwl = (Vtors*w21*w23*w34*(1.0-tspjik)*(1.0-tspijl)) * pair_scale;
 
           dndij[0] = (cross234[1]*del21[2])-(cross234[2]*del21[1]);
           dndij[1] = (cross234[2]*del21[0])-(cross234[0]*del21[2]);
@@ -1153,7 +1156,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
 
           // coordination forces
 
-          fpair = Vtors*dw21*w23*w34*(1.0-tspjik)*(1.0-tspijl) / r21;
+          fpair = Vtors*dw21*w23*w34*(1.0-tspjik)*(1.0-tspijl) / r21 * pair_scale;
           fi[0] -= del21[0]*fpair;
           fi[1] -= del21[1]*fpair;
           fi[2] -= del21[2]*fpair;
@@ -1161,7 +1164,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fk[1] += del21[1]*fpair;
           fk[2] += del21[2]*fpair;
 
-          fpair = Vtors*w21*dw23*w34*(1.0-tspjik)*(1.0-tspijl) / r23;
+          fpair = Vtors*w21*dw23*w34*(1.0-tspjik)*(1.0-tspijl) / r23 * pair_scale;
           fi[0] -= del23[0]*fpair;
           fi[1] -= del23[1]*fpair;
           fi[2] -= del23[2]*fpair;
@@ -1169,7 +1172,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fj[1] += del23[1]*fpair;
           fj[2] += del23[2]*fpair;
 
-          fpair = Vtors*w21*w23*dw34*(1.0-tspjik)*(1.0-tspijl) / r34;
+          fpair = Vtors*w21*w23*dw34*(1.0-tspjik)*(1.0-tspijl) / r34 * pair_scale;
           fj[0] -= del34[0]*fpair;
           fj[1] -= del34[1]*fpair;
           fj[2] -= del34[2]*fpair;
@@ -1180,7 +1183,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           // additional cut off function forces
 
           fcpc = -Vtors*w21*w23*w34*dtsjik*(1.0-tspijl);
-          fpair = fcpc*dcidij/rij;
+          fpair = fcpc*dcidij/rij * pair_scale;
           fi[0] += fpair*del23[0];
           fi[1] += fpair*del23[1];
           fi[2] += fpair*del23[2];
@@ -1188,7 +1191,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fj[1] -= fpair*del23[1];
           fj[2] -= fpair*del23[2];
 
-          fpair = fcpc*dcidik/rik;
+          fpair = fcpc*dcidik/rik * pair_scale;
           fi[0] += fpair*del21[0];
           fi[1] += fpair*del21[1];
           fi[2] += fpair*del21[2];
@@ -1196,7 +1199,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fk[1] -= fpair*del21[1];
           fk[2] -= fpair*del21[2];
 
-          fpair = fcpc*dcidjk/rjk;
+          fpair = fcpc*dcidjk/rjk * pair_scale;
           fj[0] += fpair*deljk[0];
           fj[1] += fpair*deljk[1];
           fj[2] += fpair*deljk[2];
@@ -1205,7 +1208,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fk[2] -= fpair*deljk[2];
 
           fcpc = -Vtors*w21*w23*w34*(1.0-tspjik)*dtsijl;
-          fpair = fcpc*dcjdji/rij;
+          fpair = fcpc*dcjdji/rij * pair_scale;
           fi[0] += fpair*del23[0];
           fi[1] += fpair*del23[1];
           fi[2] += fpair*del23[2];
@@ -1213,7 +1216,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fj[1] -= fpair*del23[1];
           fj[2] -= fpair*del23[2];
 
-          fpair = fcpc*dcjdjl/rjl;
+          fpair = fcpc*dcjdjl/rjl * pair_scale;
           fj[0] += fpair*del34[0];
           fj[1] += fpair*del34[1];
           fj[2] += fpair*del34[2];
@@ -1221,7 +1224,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fl[1] -= fpair*del34[1];
           fl[2] -= fpair*del34[2];
 
-          fpair = fcpc*dcjdil/ril;
+          fpair = fcpc*dcjdil/ril * pair_scale;
           fi[0] += fpair*delil[0];
           fi[1] += fpair*delil[1];
           fi[2] += fpair*delil[2];
@@ -1339,7 +1342,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
   dN2[1] = 0.0;
   PijS = PijSpline(NijC,NijH,itype,jtype,dN2);
   pij = 1.0/sqrt(1.0+Etmp+PijS);
-  tmp = -0.5*cube(pij);
+  tmp = -0.5*cube(pij) * pair_scale;
 
   // pij forces
 
@@ -1484,7 +1487,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
   dN2[1] = 0.0;
   PjiS = PijSpline(NjiC,NjiH,jtype,itype,dN2);
   pji = 1.0/sqrt(1.0+Etmp+PjiS);
-  tmp = -0.5*cube(pji);
+  tmp = -0.5*cube(pji) * pair_scale;
 
   REBO_neighs = REBO_firstneigh[j];
   for (l = 0; l < REBO_numneigh[j]; l++) {
@@ -1608,7 +1611,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
         (wik*kronecker(itype,1));
       SpN = Sp(Nki,Nmin,Nmax,dNki);
 
-      tmp2 = VA*dN3[0]*dwik/rikmag;
+      tmp2 = VA*dN3[0]*dwik/rikmag * pair_scale;
       f[atomi][0] -= tmp2*rik[0];
       f[atomi][1] -= tmp2*rik[1];
       f[atomi][2] -= tmp2*rik[2];
@@ -1644,7 +1647,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
             rknmag = sqrt((rkn[0]*rkn[0])+(rkn[1]*rkn[1])+(rkn[2]*rkn[2]));
             Sp(rknmag,rcmin[ktype][ntype],rcmax[ktype][ntype],dwkn);
 
-            tmp2 = VA*dN3[2]*(2.0*NconjtmpI*wik*dNki*dwkn)/rknmag;
+            tmp2 = VA*dN3[2]*(2.0*NconjtmpI*wik*dNki*dwkn)/rknmag * pair_scale;
             f[atomk][0] -= tmp2*rkn[0];
             f[atomk][1] -= tmp2*rkn[1];
             f[atomk][2] -= tmp2*rkn[2];
@@ -1675,7 +1678,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
         (wjl*kronecker(jtype,1));
       SpN = Sp(Nlj,Nmin,Nmax,dNlj);
 
-      tmp2 = VA*dN3[1]*dwjl/rjlmag;
+      tmp2 = VA*dN3[1]*dwjl/rjlmag * pair_scale;
       f[atomj][0] -= tmp2*rjl[0];
       f[atomj][1] -= tmp2*rjl[1];
       f[atomj][2] -= tmp2*rjl[2];
@@ -1689,7 +1692,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
       // to NconjtmpJ and later Nijconj
       if (ltype != 0) continue;
 
-      tmp2 = VA*dN3[2]*(2.0*NconjtmpJ*dwjl*SpN)/rjlmag;
+      tmp2 = VA*dN3[2]*(2.0*NconjtmpJ*dwjl*SpN)/rjlmag * pair_scale;
       f[atomj][0] -= tmp2*rjl[0];
       f[atomj][1] -= tmp2*rjl[1];
       f[atomj][2] -= tmp2*rjl[2];
@@ -1711,7 +1714,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
             rlnmag = sqrt((rln[0]*rln[0])+(rln[1]*rln[1])+(rln[2]*rln[2]));
             Sp(rlnmag,rcmin[ltype][ntype],rcmax[ltype][ntype],dwln);
 
-            tmp2 = VA*dN3[2]*(2.0*NconjtmpJ*wjl*dNlj*dwln)/rlnmag;
+            tmp2 = VA*dN3[2]*(2.0*NconjtmpJ*wjl*dNlj*dwln)/rlnmag * pair_scale;
             f[atoml][0] -= tmp2*rln[0];
             f[atoml][1] -= tmp2*rln[1];
             f[atoml][2] -= tmp2*rln[2];
@@ -1905,7 +1908,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
                 // coordination forces
 
                 tmp2 = VA*Tij*((1.0-(om1234*om1234))) *
-                  (1.0-tspjik)*(1.0-tspijl)*dw21*w34/r21mag;
+                  (1.0-tspjik)*(1.0-tspijl)*dw21*w34/r21mag * pair_scale;
                 f2[0] -= tmp2*r21[0];
                 f2[1] -= tmp2*r21[1];
                 f2[2] -= tmp2*r21[2];
@@ -1914,7 +1917,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
                 f1[2] += tmp2*r21[2];
 
                 tmp2 = VA*Tij*((1.0-(om1234*om1234))) *
-                  (1.0-tspjik)*(1.0-tspijl)*w21*dw34/r34mag;
+                  (1.0-tspjik)*(1.0-tspijl)*w21*dw34/r34mag * pair_scale;
                 f3[0] -= tmp2*r34[0];
                 f3[1] -= tmp2*r34[1];
                 f3[2] -= tmp2*r34[2];
@@ -1959,7 +1962,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
           (wik*kronecker(itype,1));
         SpN = Sp(Nki,Nmin,Nmax,dNki);
 
-        tmp2 = VA*dN3[0]*dwik*Etmp/rikmag;
+        tmp2 = VA*dN3[0]*dwik*Etmp/rikmag * pair_scale;
         f[atomi][0] -= tmp2*rik[0];
         f[atomi][1] -= tmp2*rik[1];
         f[atomi][2] -= tmp2*rik[2];
@@ -1973,7 +1976,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
         // to NconjtmpI and later Nijconj
         if (ktype != 0) continue;
 
-        tmp2 = VA*dN3[2]*(2.0*NconjtmpI*dwik*SpN)*Etmp/rikmag;
+        tmp2 = VA*dN3[2]*(2.0*NconjtmpI*dwik*SpN)*Etmp/rikmag * pair_scale;
         f[atomi][0] -= tmp2*rik[0];
         f[atomi][1] -= tmp2*rik[1];
         f[atomi][2] -= tmp2*rik[2];
@@ -1995,7 +1998,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
               rknmag = sqrt((rkn[0]*rkn[0])+(rkn[1]*rkn[1])+(rkn[2]*rkn[2]));
               Sp(rknmag,rcmin[ktype][ntype],rcmax[ktype][ntype],dwkn);
 
-              tmp2 = VA*dN3[2]*(2.0*NconjtmpI*wik*dNki*dwkn)*Etmp/rknmag;
+              tmp2 = VA*dN3[2]*(2.0*NconjtmpI*wik*dNki*dwkn)*Etmp/rknmag * pair_scale;
               f[atomk][0] -= tmp2*rkn[0];
               f[atomk][1] -= tmp2*rkn[1];
               f[atomk][2] -= tmp2*rkn[2];
@@ -2026,7 +2029,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
           (wjl*kronecker(jtype,1));
         SpN = Sp(Nlj,Nmin,Nmax,dNlj);
 
-        tmp2 = VA*dN3[1]*dwjl*Etmp/rjlmag;
+        tmp2 = VA*dN3[1]*dwjl*Etmp/rjlmag * pair_scale;
         f[atomj][0] -= tmp2*rjl[0];
         f[atomj][1] -= tmp2*rjl[1];
         f[atomj][2] -= tmp2*rjl[2];
@@ -2040,7 +2043,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
         // to NconjtmpJ and later Nijconj
         if (ltype != 0) continue;
 
-        tmp2 = VA*dN3[2]*(2.0*NconjtmpJ*dwjl*SpN)*Etmp/rjlmag;
+        tmp2 = VA*dN3[2]*(2.0*NconjtmpJ*dwjl*SpN)*Etmp/rjlmag * pair_scale;
         f[atomj][0] -= tmp2*rjl[0];
         f[atomj][1] -= tmp2*rjl[1];
         f[atomj][2] -= tmp2*rjl[2];
@@ -2062,7 +2065,7 @@ double PairAIREBO::bondorder(int i, int j, double rij[3],
               rlnmag = sqrt((rln[0]*rln[0])+(rln[1]*rln[1])+(rln[2]*rln[2]));
               Sp(rlnmag,rcmin[ltype][ntype],rcmax[ltype][ntype],dwln);
 
-              tmp2 = VA*dN3[2]*(2.0*NconjtmpJ*wjl*dNlj*dwln)*Etmp/rlnmag;
+              tmp2 = VA*dN3[2]*(2.0*NconjtmpJ*wjl*dNlj*dwln)*Etmp/rlnmag * pair_scale;
               f[atoml][0] -= tmp2*rln[0];
               f[atoml][1] -= tmp2*rln[1];
               f[atoml][2] -= tmp2*rln[2];
@@ -4623,4 +4626,11 @@ double PairAIREBO::memory_usage()
 
   bytes += 2*maxlocal * sizeof(double);
   return bytes;
+}
+
+void *PairAIREBO::extract(const char *str, int &dim)
+{
+    dim = 0;
+    if (strcmp(str, "scale") == 0) return (void *) &pair_scale;
+    return NULL;
 }
