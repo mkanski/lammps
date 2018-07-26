@@ -12,6 +12,7 @@
 ------------------------------------------------------------------------- */
 
 #include <math.h>
+#include <cstring>
 #include <stdlib.h>
 #include "angle_harmonic.h"
 #include "atom.h"
@@ -30,7 +31,10 @@ using namespace MathConst;
 
 /* ---------------------------------------------------------------------- */
 
-AngleHarmonic::AngleHarmonic(LAMMPS *lmp) : Angle(lmp) {}
+AngleHarmonic::AngleHarmonic(LAMMPS *lmp) : Angle(lmp)
+{
+  reinitflag = 1;
+}
 
 /* ---------------------------------------------------------------------- */
 
@@ -257,4 +261,12 @@ double AngleHarmonic::single(int type, int i1, int i2, int i3)
   double dtheta = acos(c) - theta0[type];
   double tk = k[type] * dtheta;
   return tk*dtheta;
+}
+
+void *AngleHarmonic::extract( char *str, int &dim )
+{
+    dim = 1;
+    if (strcmp(str, "kappa")==0) return (void*) k;
+    if (strcmp(str, "theta")==0) return (void*) theta0;
+    return NULL;
 }

@@ -17,6 +17,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <cstring>
 #include "dihedral_opls.h"
 #include "atom.h"
 #include "comm.h"
@@ -37,6 +38,7 @@ using namespace LAMMPS_NS;
 
 DihedralOPLS::DihedralOPLS(LAMMPS *lmp) : Dihedral(lmp)
 {
+  reinitflag = 1;
   writedata = 1;
 }
 
@@ -355,3 +357,12 @@ void DihedralOPLS::write_data(FILE *fp)
     fprintf(fp,"%d %g %g %g %g\n",i,2.0*k1[i],2.0*k2[i],2.0*k3[i],2.0*k4[i]);
 }
 
+void *DihedralOPLS::extract( char *str, int &dim )
+{
+    dim = 1;
+    if (strcmp(str, "k1")==0) return (void*) k1;
+    if (strcmp(str, "k2")==0) return (void*) k2;
+    if (strcmp(str, "k3")==0) return (void*) k3;
+    if (strcmp(str, "k4")==0) return (void*) k4;
+    return NULL;
+}

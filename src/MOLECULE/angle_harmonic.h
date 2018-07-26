@@ -36,6 +36,7 @@ class AngleHarmonic : public Angle {
   void read_restart(FILE *);
   void write_data(FILE *);
   double single(int, int, int, int);
+  virtual void *extract(char *, int &);
 
  protected:
   double *k,*theta0;

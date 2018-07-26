@@ -43,7 +43,7 @@ class FixAdapt : public Fix {
 
  private:
   int nadapt,resetflag,scaleflag;
-  int anypair, anybond;
+  int anypair, anybond, anyangle, anydihedral;
   int nlevels_respa;
   char *id_fix_diam,*id_fix_chg;
   class FixStore *fix_diam,*fix_chg;
@@ -53,14 +53,18 @@ class FixAdapt : public Fix {
     char *var;
     char *pstyle,*pparam;
     char *bstyle,*bparam;
+    char *vastyle,*vaparam;
+    char *dstyle,*dparam;
     int ilo,ihi,jlo,jhi;
-    int pdim,bdim;
+    int pdim,bdim,vadim,ddim;
     double *scalar,scalar_orig;
     double *vector,*vector_orig;
     double **array,**array_orig;
     int aparam;
     class Pair *pair;
     class Bond *bond;
+    class Angle *vangle;
+    class Dihedral *dihedral;
   };
 
   Adapt *adapt;

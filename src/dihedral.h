@@ -30,6 +30,8 @@ class Dihedral : protected Pointers {
   double virial[6];                  // accumulated virial
   double *eatom,**vatom;             // accumulated per-atom energy/virial
 
+  int reinitflag;                // 1 if compatible with fix adapt and alike
+
   // KOKKOS host/device flag and data masks
 
   ExecutionSpace execution_space;
@@ -47,6 +49,8 @@ class Dihedral : protected Pointers {
   virtual void read_restart(FILE *) = 0;
   virtual void write_data(FILE *) {}
   virtual double memory_usage();
+  virtual void *extract(char *, int &) {return NULL;}
+  virtual void reinit();
 
  protected:
   int suffix_flag;             // suffix compatibility flag
