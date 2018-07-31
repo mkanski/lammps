@@ -16,7 +16,7 @@ ID, group-ID are documented in "fix"_fix.html command :ulb,l
 adapt = style name of this fix command :l
 N = adapt simulation settings every this many timesteps :l
 one or more attribute/arg pairs may be appended :l
-attribute = {pair} or {kspace} or {atom} :l
+attribute = {pair} or {bond} or {angle} or {dihedral} or  {kspace} or {atom} :l
   {pair} args = pstyle pparam I J v_name
     pstyle = pair style name, e.g. lj/cut
     pparam = parameter to adapt over time
@@ -26,6 +26,16 @@ attribute = {pair} or {kspace} or {atom} :l
     bstyle = bond style name, e.g. harmonic
     bparam = parameter to adapt over time
     I = type bond to set parameter for
+    v_name = variable with name that calculates value of bparam
+  {angle} args = astyle aparam I v_name
+    astyle = angle style name, e.g. harmonic
+    aparam = parameter to adapt over time
+    I = type angle to set parameter for
+    v_name = variable with name that calculates value of aparam
+  {dihedral} args = dstyle dparam I v_name
+    dstyle = dihedral style name, e.g. opls
+    dparam = parameter to adapt over time
+    I = type dihedral to set parameter for
     v_name = variable with name that calculates value of bparam
   {kspace} arg = v_name
     v_name = variable with name that calculates scale factor on K-space terms
@@ -111,6 +121,7 @@ styles and parameters that can be varied by this fix.  See the doc
 pages for individual pair styles and their energy formulas for the
 meaning of these parameters:
 
+"airebo"_pair_airebo.html: scale: type global:
 "born"_pair_born.html: a,b,c: type pairs:
 "buck"_pair_buck.html: a,c: type pairs:
 "coul/cut"_pair_coul.html: scale: type pairs:
@@ -200,10 +211,10 @@ fix 1 all adapt 1 pair soft a * * v_prefactor :pre
 
 :line
 
-The {bond} keyword uses the specified variable to change the value of
-a bond coefficient over time, very similar to how the {pair} keyword
-operates. The only difference is that now a bond coefficient for a
-given bond type is adapted.
+The {bond}, {angle}, and {dihedral} keywords use the specified variable to
+change the value of a given coefficient over time, very similar to
+how the {pair} keyword operates. The only difference is that now a
+bond/angle/dihedral coefficient for a given interaction type is adapted.
 
 A wild-card asterisk can be used in place of or in conjunction with
 the bond type argument to set the coefficients for multiple bond types.
@@ -213,11 +224,13 @@ from 1 to N.  A leading asterisk means all types from 1 to n (inclusive).
 A trailing asterisk means all types from n to N (inclusive).  A middle
 asterisk means all types from m to n (inclusive).
 
-Currently {bond} does not support bond_style hybrid nor bond_style
-hybrid/overlay as bond styles. The only bonds that currently are
+Currently {bond}/{angle}/{dihedral} do not support styles hybrid nor
+hybrid/overlay. The interaction styles that currently are
 working with fix_adapt are
 
-"harmonic"_bond_harmonic.html: k,r0: type bonds :tb(c=3,s=:)
+"harmonic"_bond_harmonic.html: kappa,r0: type bonds:
+"harmonic"_angle_harmonic.html: kappa,theta0: type angles:
+"opls"_dihedral_harmonic.html: k1,k2,k3,k4: type dihedrals :tb(c=3,s=:)
 
 :line
 

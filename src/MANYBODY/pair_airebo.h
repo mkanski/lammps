@@ -65,7 +65,6 @@ class PairAIREBO : public Pair {
   double *nC,*nH;                  // sum of weighting fns with REBO neighs
 
   double pair_scale;
-
   double smin,Nmin,Nmax,NCmin,NCmax,thmin,thmax;
   double rcmin[2][2],rcmax[2][2],rcmaxsq[2][2],rcmaxp[2][2];
   double Q[2][2],alpha[2][2],A[2][2],rho[2][2],BIJc[2][2][3],Beta[2][2][3];

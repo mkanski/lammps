@@ -265,6 +265,8 @@ double AngleHarmonic::single(int type, int i1, int i2, int i3)
   return tk*dtheta;
 }
 
+/* ---------------------------------------------------------------------- */
+
 void *AngleHarmonic::extract( char *str, int &dim )
 {
     dim = 1;

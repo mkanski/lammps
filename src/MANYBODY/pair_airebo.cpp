@@ -72,7 +72,6 @@ PairAIREBO::PairAIREBO(LAMMPS *lmp) : Pair(lmp)
   manybody_flag = 1;
 
   pair_scale = 1.0;
-
   sigwid = 0.84;
   sigcut = 3.0;
   sigmin = sigcut - sigwid;
@@ -227,7 +226,6 @@ void PairAIREBO::coeff(int narg, char **arg)
         setflag[i][j] = 1;
         count++;
       }
-
 
   if (count == 0) error->all(FLERR,"Incorrect args for pair coefficients");
 }
@@ -1050,7 +1048,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           Ec = 256.0*ekijl/405.0;
           Vtors = ((Ec*(powint(cw2,5)))-(ekijl/10.0)) * pair_scale;
 
-          if (eflag) pvector[2] += evdwl = (Vtors*w21*w23*w34*(1.0-tspjik)*(1.0-tspijl));
+          if (eflag) pvector[2] += evdwl = Vtors*w21*w23*w34*(1.0-tspjik)*(1.0-tspijl);
 
           dndij[0] = (cross234[1]*del21[2])-(cross234[2]*del21[1]);
           dndij[1] = (cross234[2]*del21[0])-(cross234[0]*del21[2]);
@@ -1184,7 +1182,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           // additional cut off function forces
 
           fcpc = -Vtors*w21*w23*w34*dtsjik*(1.0-tspijl);
-          fpair = fcpc*dcidij/rij ;
+          fpair = fcpc*dcidij/rij;
           fi[0] += fpair*del23[0];
           fi[1] += fpair*del23[1];
           fi[2] += fpair*del23[2];
@@ -1192,7 +1190,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fj[1] -= fpair*del23[1];
           fj[2] -= fpair*del23[2];
 
-          fpair = fcpc*dcidik/rik ;
+          fpair = fcpc*dcidik/rik;
           fi[0] += fpair*del21[0];
           fi[1] += fpair*del21[1];
           fi[2] += fpair*del21[2];
@@ -1200,7 +1198,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fk[1] -= fpair*del21[1];
           fk[2] -= fpair*del21[2];
 
-          fpair = fcpc*dcidjk/rjk ;
+          fpair = fcpc*dcidjk/rjk;
           fj[0] += fpair*deljk[0];
           fj[1] += fpair*deljk[1];
           fj[2] += fpair*deljk[2];
@@ -1209,7 +1207,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fk[2] -= fpair*deljk[2];
 
           fcpc = -Vtors*w21*w23*w34*(1.0-tspjik)*dtsijl;
-          fpair = fcpc*dcjdji/rij ;
+          fpair = fcpc*dcjdji/rij;
           fi[0] += fpair*del23[0];
           fi[1] += fpair*del23[1];
           fi[2] += fpair*del23[2];
@@ -1217,7 +1215,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fj[1] -= fpair*del23[1];
           fj[2] -= fpair*del23[2];
 
-          fpair = fcpc*dcjdjl/rjl ;
+          fpair = fcpc*dcjdjl/rjl;
           fj[0] += fpair*del34[0];
           fj[1] += fpair*del34[1];
           fj[2] += fpair*del34[2];
@@ -1225,7 +1223,7 @@ void PairAIREBO::TORSION(int eflag, int vflag)
           fl[1] -= fpair*del34[1];
           fl[2] -= fpair*del34[2];
 
-          fpair = fcpc*dcjdil/ril ;
+          fpair = fcpc*dcjdil/ril;
           fi[0] += fpair*delil[0];
           fi[1] += fpair*delil[1];
           fi[2] += fpair*delil[2];

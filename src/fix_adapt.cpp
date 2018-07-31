@@ -583,7 +583,7 @@ void FixAdapt::init()
     }
   }
 
-  // make copy of original pair/bond array values
+  // make copy of original pair/bond/angle/dihedral array values
 
   for (int m = 0; m < nadapt; m++) {
     Adapt *ad = &adapt[m];
@@ -712,18 +712,24 @@ void FixAdapt::change_settings()
         if (scaleflag)
           for (i = ad->ilo; i <= ad->ihi; ++i )
             ad->vector[i] = value*ad->vector_orig[i];
-        else
+        else {
+            if (strcmp(ad->vaparam, "theta") == 0)
+                value *= MathConst::MY_PI/180.0; //convert from degrees to radians
           for (i = ad->ilo; i <= ad->ihi; ++i )
             ad->vector[i] = value;
+        }
       }
     } else if (ad->which == DIHEDRAL) {
       if (ad->ddim == 1){
         if (scaleflag)
           for (i = ad->ilo; i <= ad->ihi; ++i )
             ad->vector[i] = value*ad->vector_orig[i];
-        else
+        else {
+            if (strcmp(ad->dstyle, "opls") == 0)
+                value *= 0.5; //for opls include 0.5 factor
           for (i = ad->ilo; i <= ad->ihi; ++i )
             ad->vector[i] = value;
+        }
       }
       
     // set kspace scale factor
