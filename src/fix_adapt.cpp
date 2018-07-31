@@ -242,14 +242,14 @@ nadapt(0), id_fix_diam(NULL), id_fix_chg(NULL), adapt(NULL)
 
   // allocate angle style arrays:
 
-  n = atom->nbondtypes;
+  n = atom->nangletypes;
   for (int m = 0; m < nadapt; ++m)
     if (adapt[m].which == ANGLE)
       memory->create(adapt[m].vector_orig,n+1,"adapt:vector_orig");
 
   // allocate dihedral style arrays:
 
-  n = atom->nbondtypes;
+  n = atom->ndihedraltypes;
   for (int m = 0; m < nadapt; ++m)
     if (adapt[m].which == DIHEDRAL)
       memory->create(adapt[m].vector_orig,n+1,"adapt:vector_orig");
