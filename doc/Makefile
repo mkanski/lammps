@@ -9,6 +9,7 @@ TXT2RST       = $(VENV)/bin/txt2rst
 ANCHORCHECK   = $(VENV)/bin/doc_anchor_check
 
 PYTHON        = $(shell which python3)
+VIRTUALENV     = virtualenv
 HAS_PYTHON3    = NO
 HAS_VIRTUALENV = NO
 
@@ -16,11 +17,18 @@ ifeq ($(shell which python3 >/dev/null 2>&1; echo $$?), 0)
 HAS_PYTHON3 = YES
 endif
 
-ifeq ($(shell which virtualenv >/dev/null 2>&1; echo $$?), 0)
+ifeq ($(shell which virtualenv-3 >/dev/null 2>&1; echo $$?), 0)
+VIRTUALENV     = virtualenv-3
 HAS_VIRTUALENV = YES
 endif
 
-SOURCES=$(wildcard src/*.txt)
+ifeq ($(shell which virtualenv >/dev/null 2>&1; echo $$?), 0)
+VIRTUALENV     = virtualenv
+HAS_VIRTUALENV = YES
+endif
+
+SPHINXEXTRA = -j $(shell $(PYTHON) -c 'import multiprocessing;print(multiprocessing.cpu_count())')
+SOURCES=$(filter-out $(wildcard src/lammps_commands*.txt) src/lammps_support.txt src/lammps_tutorials.txt,$(wildcard src/*.txt))
 OBJECTS=$(SOURCES:src/%.txt=$(RSTDIR)/%.rst)
 
 .PHONY: help clean-all clean epub html pdf old venv spelling anchor_check
@@ -41,11 +49,11 @@ help:
 
 # ------------------------------------------
 
-clean-all:
+clean-all: clean
 	rm -rf $(BUILDDIR)/* utils/txt2html/txt2html.exe
 
 clean:
-	rm -rf $(RSTDIR) html
+	rm -rf $(RSTDIR) html old epub
 	rm -rf spelling
 
 clean-spelling:
@@ -55,7 +63,7 @@ html: $(OBJECTS) $(ANCHORCHECK)
 	@(\
 		. $(VENV)/bin/activate ;\
 		cp -r src/* $(RSTDIR)/ ;\
-		sphinx-build -j 8 -b html -c utils/sphinx-config -d $(BUILDDIR)/doctrees $(RSTDIR) html ;\
+		sphinx-build $(SPHINXEXTRA) -b html -c utils/sphinx-config -d $(BUILDDIR)/doctrees $(RSTDIR) html ;\
 		echo "############################################" ;\
 		doc_anchor_check src/*.txt ;\
 		echo "############################################" ;\
@@ -91,7 +99,7 @@ epub: $(OBJECTS)
 	@(\
 		. $(VENV)/bin/activate ;\
 		cp -r src/* $(RSTDIR)/ ;\
-		sphinx-build -j 8 -b epub -c utils/sphinx-config -d $(BUILDDIR)/doctrees $(RSTDIR) epub ;\
+		sphinx-build $(SPHINXEXTRA) -b epub -c utils/sphinx-config -d $(BUILDDIR)/doctrees $(RSTDIR) epub ;\
 		deactivate ;\
 	)
 	@mv  epub/LAMMPS.epub .
@@ -149,7 +157,7 @@ $(RSTDIR)/%.rst : src/%.txt $(TXT2RST)
 	@(\
 		mkdir -p $(RSTDIR) ; \
 		. $(VENV)/bin/activate ;\
-		txt2rst $< > $@ ;\
+		txt2rst -v $< > $@ ;\
 		deactivate ;\
 	)
 
@@ -157,9 +165,9 @@ $(VENV):
 	@if [ "$(HAS_PYTHON3)" == "NO" ] ; then echo "Python3 was not found! Please check README.md for further instructions" 1>&2; exit 1; fi
 	@if [ "$(HAS_VIRTUALENV)" == "NO" ] ; then echo "virtualenv was not found! Please check README.md for further instructions" 1>&2; exit 1; fi
 	@( \
-		virtualenv -p $(PYTHON) $(VENV); \
+		$(VIRTUALENV) -p $(PYTHON) $(VENV); \
 		. $(VENV)/bin/activate; \
-		pip install Sphinx==1.5.6; \
+		pip install Sphinx; \
 		pip install sphinxcontrib-images; \
 		deactivate;\
 	)

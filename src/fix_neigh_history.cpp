@@ -12,8 +12,8 @@
 ------------------------------------------------------------------------- */
 
 #include <mpi.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include "fix_neigh_history.h"
 #include "atom.h"
 #include "comm.h"
@@ -715,12 +715,13 @@ void FixNeighHistory::set_arrays(int i)
 int FixNeighHistory::pack_reverse_comm_size(int n, int first)
 {
   int i,last;
+  int dnump1 = dnum + 1;
 
   int m = 0;
   last = first + n;
 
   for (i = first; i < last; i++)
-    m += 1 + (dnum+1)*npartner[i];
+    m += 1 + dnump1*npartner[i];
 
   return m;
 }

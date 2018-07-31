@@ -1,4 +1,4 @@
- "LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
 
 :link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
@@ -45,7 +45,7 @@ args = list of arguments for a particular style :l
   {xyz/gz} args = none
   {xyz/mpiio} args = none :pre
 
-{custom} or {custom/gz} or {custom/mpiio} args = list of atom attributes :l
+{custom} or {custom/gz} or {custom/mpiio} or {netcdf} or {netcdf/mpiio} args = list of atom attributes :l
     possible attributes = id, mol, proc, procp1, type, element, mass,
                           x, y, z, xs, ys, zs, xu, yu, zu,
                           xsu, ysu, zsu, ix, iy, iz,
@@ -120,9 +120,10 @@ which dump output is written can also be controlled by a variable.
 See the "dump_modify every"_dump_modify.html command.
 
 Only information for atoms in the specified group is dumped.  The
-"dump_modify thresh and region"_dump_modify.html commands can also
-alter what atoms are included.  Not all styles support all these
-options; see details below.
+"dump_modify thresh and region and refresh"_dump_modify.html commands
+can also alter what atoms are included.  Not all styles support
+these options; see details on the "dump_modify"_dump_modify.html doc
+page.
 
 As described below, the filename determines the kind of output (text
 or binary or gzipped, one big file or one per timestep, one big file
@@ -183,10 +184,10 @@ file and in what format.  Settings made via the
 individual values and the file itself.
 
 The {atom}, {local}, and {custom} styles create files in a simple text
-format that is self-explanatory when viewing a dump file.  Many of the
-LAMMPS "post-processing tools"_Section_tools.html, including
-"Pizza.py"_http://www.sandia.gov/~sjplimp/pizza.html, work with this
-format, as does the "rerun"_rerun.html command.
+format that is self-explanatory when viewing a dump file.  Some of the
+LAMMPS post-processing tools described on the "Tools"_Tools.html doc
+page, including "Pizza.py"_http://www.sandia.gov/~sjplimp/pizza.html,
+work with this format, as does the "rerun"_rerun.html command.
 
 For post-processing purposes the {atom}, {local}, and {custom} text
 files are self-describing in the following sense.
@@ -412,10 +413,10 @@ If the filename ends with ".bin", the dump file (or files, if "*" or
 will be about the same size as a text version, but will typically
 write out much faster.  Of course, when post-processing, you will need
 to convert it back to text format (see the "binary2txt
-tool"_Section_tools.html#binary) or write your own code to read the
-binary file.  The format of the binary file can be understood by
-looking at the tools/binary2txt.cpp file.  This option is only
-available for the {atom} and {custom} styles.
+tool"_Tools.html#binary) or write your own code to read the binary
+file.  The format of the binary file can be understood by looking at
+the tools/binary2txt.cpp file.  This option is only available for the
+{atom} and {custom} styles.
 
 If the filename ends with ".gz", the dump file (or files, if "*" or "%"
 is also used) is written in gzipped format.  A gzipped dump file will
@@ -624,9 +625,9 @@ The {d_name} and {i_name} attributes allow to output custom per atom
 floating point or integer properties that are managed by
 "fix property/atom"_fix_property_atom.html.
 
-See "Section 10"_Section_modify.html of the manual for information
-on how to add new compute and fix styles to LAMMPS to calculate
-per-atom quantities which could then be output into dump files.
+See the "Modify"_Modify.html doc page for information on how to add
+new compute and fix styles to LAMMPS to calculate per-atom quantities
+which could then be output into dump files.
 
 :line
 
@@ -649,20 +650,7 @@ LAMMPS"_Section_start.html#start_3 section for more info.
 
 The {xtc} style is part of the MISC package.  It is only enabled if
 LAMMPS was built with that package.  See the "Making
-LAMMPS"_Section_start.html#start_3 section for more info.  This is
-because some machines may not support the low-level XDR data format
-that XTC files are written with, which will result in a compile-time
-error when a low-level include file is not found.  Putting this style
-in a package makes it easy to exclude from a LAMMPS build for those
-machines.  However, the MISC package also includes two compatibility
-header files and associated functions, which should be a suitable
-substitute on machines that do not have the appropriate native header
-files.  This option can be invoked at build time by adding
--DLAMMPS_XDR to the CCFLAGS variable in the appropriate low-level
-Makefile, e.g. src/MAKE/Makefile.foo.  This compatibility mode has
-been tested successfully on Cray XT3/XT4/XT5 and IBM BlueGene/L
-machines and should also work on IBM BG/P, and Windows XP/Vista/7
-machines.
+LAMMPS"_Section_start.html#start_3 section for more info.
 
 [Related commands:]
 

@@ -16,9 +16,9 @@
 ------------------------------------------------------------------------- */
 
 #include <mpi.h>
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include "pair_table_kokkos.h"
 #include "kokkos.h"
 #include "atom.h"
@@ -141,8 +141,8 @@ void PairTableKokkos<DeviceType>::compute_style(int eflag_in, int vflag_in)
     } else if (neighflag == N2) {
       PairComputeFunctor<PairTableKokkos<DeviceType>,N2,false,S_TableCompute<DeviceType,TABSTYLE> >
         f(this,(NeighListKokkos<DeviceType>*) list);
-      if (eflag || vflag) Kokkos::parallel_reduce(nlocal,f,ev);
-      else Kokkos::parallel_for(nlocal,f);
+      if (eflag || vflag) Kokkos::parallel_reduce(list->inum,f,ev);
+      else Kokkos::parallel_for(list->inum,f);
     }
   } else {
     if (neighflag == FULL) {
@@ -163,8 +163,8 @@ void PairTableKokkos<DeviceType>::compute_style(int eflag_in, int vflag_in)
     } else if (neighflag == N2) {
       PairComputeFunctor<PairTableKokkos<DeviceType>,N2,true,S_TableCompute<DeviceType,TABSTYLE> >
         f(this,(NeighListKokkos<DeviceType>*) list);
-      if (eflag || vflag) Kokkos::parallel_reduce(nlocal,f,ev);
-      else Kokkos::parallel_for(nlocal,f);
+      if (eflag || vflag) Kokkos::parallel_reduce(list->inum,f,ev);
+      else Kokkos::parallel_for(list->inum,f);
     }
   }
 
@@ -313,21 +313,21 @@ void PairTableKokkos<DeviceType>::create_kokkos_tables()
     h_table->invdelta[i] = tb->invdelta;
     h_table->deltasq6[i] = tb->deltasq6;
 
-    for(int j = 0; j<h_table->rsq.dimension_1(); j++)
+    for(int j = 0; j<h_table->rsq.extent(1); j++)
       h_table->rsq(i,j) = tb->rsq[j];
-    for(int j = 0; j<h_table->drsq.dimension_1(); j++)
+    for(int j = 0; j<h_table->drsq.extent(1); j++)
       h_table->drsq(i,j) = tb->drsq[j];
-    for(int j = 0; j<h_table->e.dimension_1(); j++)
+    for(int j = 0; j<h_table->e.extent(1); j++)
       h_table->e(i,j) = tb->e[j];
-    for(int j = 0; j<h_table->de.dimension_1(); j++)
+    for(int j = 0; j<h_table->de.extent(1); j++)
       h_table->de(i,j) = tb->de[j];
-    for(int j = 0; j<h_table->f.dimension_1(); j++)
+    for(int j = 0; j<h_table->f.extent(1); j++)
       h_table->f(i,j) = tb->f[j];
-    for(int j = 0; j<h_table->df.dimension_1(); j++)
+    for(int j = 0; j<h_table->df.extent(1); j++)
       h_table->df(i,j) = tb->df[j];
-    for(int j = 0; j<h_table->e2.dimension_1(); j++)
+    for(int j = 0; j<h_table->e2.extent(1); j++)
       h_table->e2(i,j) = tb->e2[j];
-    for(int j = 0; j<h_table->f2.dimension_1(); j++)
+    for(int j = 0; j<h_table->f2.extent(1); j++)
       h_table->f2(i,j) = tb->f2[j];
   }
 

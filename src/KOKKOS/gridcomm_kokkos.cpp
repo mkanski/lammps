@@ -241,8 +241,8 @@ void GridCommKokkos<DeviceType>::setup()
       maxswap += SWAPDELTA;
       swap = (Swap *)
         memory->srealloc(swap,maxswap*sizeof(Swap),"Commgrid:swap");
-      k_packlist.resize(maxswap,k_packlist.dimension_1());
-      k_unpacklist.resize(maxswap,k_unpacklist.dimension_1());
+      k_packlist.resize(maxswap,k_packlist.extent(1));
+      k_unpacklist.resize(maxswap,k_unpacklist.extent(1));
     }
 
     swap[nswap].sendproc = procxlo;
@@ -285,8 +285,8 @@ void GridCommKokkos<DeviceType>::setup()
       maxswap += 1;
       swap = (Swap *)
         memory->srealloc(swap,maxswap*sizeof(Swap),"Commgrid:swap");
-      k_packlist.resize(maxswap,k_packlist.dimension_1());
-      k_unpacklist.resize(maxswap,k_unpacklist.dimension_1());
+      k_packlist.resize(maxswap,k_packlist.extent(1));
+      k_unpacklist.resize(maxswap,k_unpacklist.extent(1));
     }
 
     swap[nswap].sendproc = procxhi;
@@ -329,8 +329,8 @@ void GridCommKokkos<DeviceType>::setup()
       maxswap += SWAPDELTA;
       swap = (Swap *)
         memory->srealloc(swap,maxswap*sizeof(Swap),"Commgrid:swap");
-      k_packlist.resize(maxswap,k_packlist.dimension_1());
-      k_unpacklist.resize(maxswap,k_unpacklist.dimension_1());
+      k_packlist.resize(maxswap,k_packlist.extent(1));
+      k_unpacklist.resize(maxswap,k_unpacklist.extent(1));
     }
 
     swap[nswap].sendproc = procylo;
@@ -373,8 +373,8 @@ void GridCommKokkos<DeviceType>::setup()
       maxswap += 1;
       swap = (Swap *)
         memory->srealloc(swap,maxswap*sizeof(Swap),"Commgrid:swap");
-      k_packlist.resize(maxswap,k_packlist.dimension_1());
-      k_unpacklist.resize(maxswap,k_unpacklist.dimension_1());
+      k_packlist.resize(maxswap,k_packlist.extent(1));
+      k_unpacklist.resize(maxswap,k_unpacklist.extent(1));
     }
 
     swap[nswap].sendproc = procyhi;
@@ -417,8 +417,8 @@ void GridCommKokkos<DeviceType>::setup()
       maxswap += SWAPDELTA;
       swap = (Swap *)
         memory->srealloc(swap,maxswap*sizeof(Swap),"Commgrid:swap");
-      k_packlist.resize(maxswap,k_packlist.dimension_1());
-      k_unpacklist.resize(maxswap,k_unpacklist.dimension_1());
+      k_packlist.resize(maxswap,k_packlist.extent(1));
+      k_unpacklist.resize(maxswap,k_unpacklist.extent(1));
     }
 
     swap[nswap].sendproc = proczlo;
@@ -461,8 +461,8 @@ void GridCommKokkos<DeviceType>::setup()
       maxswap += 1;
       swap = (Swap *)
         memory->srealloc(swap,maxswap*sizeof(Swap),"Commgrid:swap");
-      k_packlist.resize(maxswap,k_packlist.dimension_1());
-      k_unpacklist.resize(maxswap,k_unpacklist.dimension_1());
+      k_packlist.resize(maxswap,k_packlist.extent(1));
+      k_unpacklist.resize(maxswap,k_unpacklist.extent(1));
     }
 
     swap[nswap].sendproc = proczhi;
@@ -523,16 +523,18 @@ void GridCommKokkos<DeviceType>::forward_comm(KSpace *kspace, int which)
       kspaceKKBase->pack_forward_kspace_kokkos(which,k_buf2,swap[m].npack,k_packlist,m);
     else
       kspaceKKBase->pack_forward_kspace_kokkos(which,k_buf1,swap[m].npack,k_packlist,m);
+    DeviceType::fence();
 
     if (swap[m].sendproc != me) {
-      MPI_Irecv(k_buf2.view<DeviceType>().ptr_on_device(),nforward*swap[m].nunpack,MPI_FFT_SCALAR,
+      MPI_Irecv(k_buf2.view<DeviceType>().data(),nforward*swap[m].nunpack,MPI_FFT_SCALAR,
                 swap[m].recvproc,0,gridcomm,&request);
-      MPI_Send(k_buf1.view<DeviceType>().ptr_on_device(),nforward*swap[m].npack,MPI_FFT_SCALAR,
+      MPI_Send(k_buf1.view<DeviceType>().data(),nforward*swap[m].npack,MPI_FFT_SCALAR,
                swap[m].sendproc,0,gridcomm);
       MPI_Wait(&request,MPI_STATUS_IGNORE);
     }
 
     kspaceKKBase->unpack_forward_kspace_kokkos(which,k_buf2,swap[m].nunpack,k_unpacklist,m);
+    DeviceType::fence();
   }
 }
 
@@ -554,16 +556,18 @@ void GridCommKokkos<DeviceType>::reverse_comm(KSpace *kspace, int which)
       kspaceKKBase->pack_reverse_kspace_kokkos(which,k_buf2,swap[m].nunpack,k_unpacklist,m);
     else
       kspaceKKBase->pack_reverse_kspace_kokkos(which,k_buf1,swap[m].nunpack,k_unpacklist,m);
+    DeviceType::fence();
 
     if (swap[m].recvproc != me) {
-      MPI_Irecv(k_buf2.view<DeviceType>().ptr_on_device(),nreverse*swap[m].npack,MPI_FFT_SCALAR,
+      MPI_Irecv(k_buf2.view<DeviceType>().data(),nreverse*swap[m].npack,MPI_FFT_SCALAR,
                 swap[m].sendproc,0,gridcomm,&request);
-      MPI_Send(k_buf1.view<DeviceType>().ptr_on_device(),nreverse*swap[m].nunpack,MPI_FFT_SCALAR,
+      MPI_Send(k_buf1.view<DeviceType>().data(),nreverse*swap[m].nunpack,MPI_FFT_SCALAR,
                swap[m].recvproc,0,gridcomm);
       MPI_Wait(&request,MPI_STATUS_IGNORE);
     }
 
     kspaceKKBase->unpack_reverse_kspace_kokkos(which,k_buf2,swap[m].npack,k_packlist,m);
+    DeviceType::fence();
   }
 }
 
@@ -578,8 +582,8 @@ int GridCommKokkos<DeviceType>::indices(DAT::tdual_int_2d &k_list, int index,
                        int xlo, int xhi, int ylo, int yhi, int zlo, int zhi)
 {
   int nmax = (xhi-xlo+1) * (yhi-ylo+1) * (zhi-zlo+1);
-  if (k_list.dimension_1() < nmax)
-    k_list.resize(k_list.dimension_0(),nmax);
+  if (k_list.extent(1) < nmax)
+    k_list.resize(k_list.extent(0),nmax);
 
   int nx = (outxhi_max-outxlo_max+1);
   int ny = (outyhi_max-outylo_max+1);

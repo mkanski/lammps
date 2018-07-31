@@ -11,9 +11,9 @@
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include "fix_adapt.h"
 #include "angle.h"
 #include "atom.h"
@@ -461,7 +461,7 @@ void FixAdapt::init()
     } else if (ad->which == BOND){
       ad->bond = NULL;
       anybond = 1;
-      
+
       int n = strlen(ad->bstyle) + 1;
       char *bstyle = new char[n];
       strcpy(bstyle,ad->bstyle);
@@ -480,7 +480,7 @@ void FixAdapt::init()
         error->all(FLERR,"Fix adapt bond style does not exist");
 
       void *ptr = ad->bond->extract(ad->bparam,ad->bdim);
-      
+
       if (ptr == NULL)
         error->all(FLERR,"Fix adapt bond style param not supported");
 
@@ -577,8 +577,8 @@ void FixAdapt::init()
           error->all(FLERR,"Fix adapt requires atom attribute diameter");
       }
       if (ad->aparam == CHARGE) {
-	if (!atom->q_flag)
-	  error->all(FLERR,"Fix adapt requires atom attribute charge");
+        if (!atom->q_flag)
+          error->all(FLERR,"Fix adapt requires atom attribute charge");
       }
     }
   }
@@ -593,7 +593,7 @@ void FixAdapt::init()
           ad->array_orig[i][j] = ad->array[i][j];
     } else if (ad->which == PAIR && ad->pdim == 0){
       ad->scalar_orig = *ad->scalar;
-      
+
     } else if (ad->which == BOND && ad->bdim == 1){
       for (i = ad->ilo; i <= ad->ihi; ++i )
         ad->vector_orig[i] = ad->vector[i];
@@ -604,7 +604,7 @@ void FixAdapt::init()
       for (i = ad->ilo; i <= ad->ihi; ++i )
         ad->vector_orig[i] = ad->vector[i];
     }
-    
+
   }
 
   // fixes that store initial per-atom values
@@ -765,12 +765,12 @@ void FixAdapt::change_settings()
         }
       } else if (ad->aparam == CHARGE) {
         double *q = atom->q;
-	int *mask = atom->mask;
-	int nlocal = atom->nlocal;
+        int *mask = atom->mask;
+        int nlocal = atom->nlocal;
         int nall = nlocal + atom->nghost;
 
-	for (i = 0; i < nall; i++)
-	  if (mask[i] & groupbit) q[i] = value;
+        for (i = 0; i < nall; i++)
+          if (mask[i] & groupbit) q[i] = value;
       }
     }
   }
@@ -842,7 +842,7 @@ void FixAdapt::restore_settings()
         for (int i = ad->ilo; i <= ad->ihi; i++)
           ad->vector[i] = ad->vector_orig[i];
       }
-      
+
     } else if (ad->which == KSPACE) {
       *kspace_scale = 1.0;
 
