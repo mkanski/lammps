@@ -488,8 +488,7 @@ void FixAdapt::init()
 
       if (ad->bdim == 1) ad->vector = (double *) ptr;
 
-      if (strcmp(force->bond_style,"hybrid") == 0 ||
-          strcmp(force->bond_style,"hybrid_overlay") == 0)
+      if (strcmp(force->bond_style,"hybrid") == 0)
         error->all(FLERR,"Fix adapt does not support bond_style hybrid");
 
       delete [] bstyle;
@@ -524,8 +523,7 @@ void FixAdapt::init()
 
       if (ad->vadim == 1) ad->vector = (double *) ptr;
 
-      if (strcmp(force->angle_style,"hybrid") == 0 ||
-          strcmp(force->angle_style,"hybrid_overlay") == 0)
+      if (strcmp(force->angle_style,"hybrid") == 0)
         error->all(FLERR,"Fix adapt does not support angle_style hybrid");
 
       delete [] vastyle;
@@ -560,8 +558,7 @@ void FixAdapt::init()
 
       if (ad->ddim == 1) ad->vector = (double *) ptr;
 
-      if (strcmp(force->dihedral_style,"hybrid") == 0 ||
-          strcmp(force->dihedral_style,"hybrid_overlay") == 0)
+      if (strcmp(force->dihedral_style,"hybrid") == 0)
         error->all(FLERR,"Fix adapt does not support dihedral_style hybrid");
 
       delete [] dstyle;
@@ -713,8 +710,8 @@ void FixAdapt::change_settings()
           for (i = ad->ilo; i <= ad->ihi; ++i )
             ad->vector[i] = value*ad->vector_orig[i];
         else {
-            if (strcmp(ad->vaparam, "theta") == 0)
-                value *= MathConst::MY_PI/180.0; //convert from degrees to radians
+          if (strcmp(ad->vaparam, "theta") == 0)
+            value *= MathConst::MY_PI/180.0; //convert from degrees to radians
           for (i = ad->ilo; i <= ad->ihi; ++i )
             ad->vector[i] = value;
         }
@@ -725,8 +722,8 @@ void FixAdapt::change_settings()
           for (i = ad->ilo; i <= ad->ihi; ++i )
             ad->vector[i] = value*ad->vector_orig[i];
         else {
-            if (strcmp(ad->dstyle, "opls") == 0)
-                value *= 0.5; //for opls include 0.5 factor
+          if (strcmp(ad->dstyle, "opls") == 0)
+            value *= 0.5; //for opls include 0.5 factor
           for (i = ad->ilo; i <= ad->ihi; ++i )
             ad->vector[i] = value;
         }
@@ -842,9 +839,20 @@ void FixAdapt::restore_settings()
             ad->array[i][j] = ad->array_orig[i][j];
       }
 
-    } else if (ad->which == BOND || ad->which == ANGLE ||
-            ad->which == DIHEDRAL) {
+    } else if (ad->which == BOND) {
       if (ad->pdim == 1) {
+        for (int i = ad->ilo; i <= ad->ihi; i++)
+          ad->vector[i] = ad->vector_orig[i];
+      }
+
+    } else if (ad->which == ANGLE) {
+      if (ad->vadim == 1) {
+        for (int i = ad->ilo; i <= ad->ihi; i++)
+          ad->vector[i] = ad->vector_orig[i];
+      }
+
+    } else if (ad->which == DIHEDRAL) {
+      if (ad->ddim == 1) {
         for (int i = ad->ilo; i <= ad->ihi; i++)
           ad->vector[i] = ad->vector_orig[i];
       }

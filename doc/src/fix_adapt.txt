@@ -36,7 +36,7 @@ attribute = {pair} or {bond} or {angle} or {dihedral} or  {kspace} or {atom} :l
     dstyle = dihedral style name, e.g. opls
     dparam = parameter to adapt over time
     I = type dihedral to set parameter for
-    v_name = variable with name that calculates value of bparam
+    v_name = variable with name that calculates value of dparam
   {kspace} arg = v_name
     v_name = variable with name that calculates scale factor on K-space terms
   {atom} args = aparam v_name
@@ -224,9 +224,8 @@ from 1 to N.  A leading asterisk means all types from 1 to n (inclusive).
 A trailing asterisk means all types from n to N (inclusive).  A middle
 asterisk means all types from m to n (inclusive).
 
-Currently {bond}/{angle}/{dihedral} do not support styles hybrid nor
-hybrid/overlay. The interaction styles that currently are
-working with fix_adapt are
+Currently {bond}/{angle}/{dihedral} do not support style hybrid.
+The interaction styles that currently are working with fix_adapt are
 
 "harmonic"_bond_harmonic.html: kappa,r0: type bonds:
 "harmonic"_angle_harmonic.html: kappa,theta0: type angles:
