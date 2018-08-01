@@ -270,7 +270,7 @@ double Dihedral::memory_usage()
 void Dihedral::reinit()
 {
   if (!reinitflag)
-    error->all(FLERR,"Fix adapt interface to this bond style not supported");
+    error->all(FLERR,"Fix adapt interface to this dihedral style not supported");
 
   init();
 }
