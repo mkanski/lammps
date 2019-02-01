@@ -32,10 +32,10 @@
    Rules"_http://lammps.sandia.gov/open_source.html
 ------------------------------------------------------------------------- */
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <mpi.h>
 #include "pair_bop.h"
 #include "atom.h"
@@ -49,7 +49,7 @@
 #include "neigh_request.h"
 #include "memory.h"
 #include "error.h"
-#include <ctype.h>
+#include <cctype>
 
 using namespace LAMMPS_NS;
 
@@ -4976,7 +4976,7 @@ void PairBOP::read_table(char *filename)
     FILE *fp = force->open_potential(filename);
     if (fp == NULL) {
       char str[128];
-      sprintf(str,"Cannot open BOP potential file %s",filename);
+      snprintf(str,128,"Cannot open BOP potential file %s",filename);
       error->one(FLERR,str);
     }
     fgets(s,MAXLINE,fp);  // skip first comment line
@@ -5079,7 +5079,7 @@ void PairBOP::read_table(char *filename)
     FILE *fp = force->open_potential(filename);
     if (fp == NULL) {
       char str[128];
-      sprintf(str,"Cannot open BOP potential file %s",filename);
+      snprintf(str,128,"Cannot open BOP potential file %s",filename);
       error->one(FLERR,str);
     }
     fgets(s,MAXLINE,fp);  // skip first comment line

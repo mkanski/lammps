@@ -20,7 +20,7 @@ FixStyle(halt,FixHalt)
 #ifndef LMP_FIX_HALT_H
 #define LMP_FIX_HALT_H
 
-#include <stdio.h>
+#include <cstdio>
 #include "fix.h"
 
 namespace LAMMPS_NS {
@@ -32,11 +32,12 @@ class FixHalt : public Fix {
   int setmask();
   void init();
   void end_of_step();
+  void min_post_force(int);
   void post_run();
 
  private:
   int attribute,operation,eflag,msgflag,ivar;
-  bigint nextstep;
+  bigint nextstep,thisstep;
   double value,tratio;
   char *idvar;
 

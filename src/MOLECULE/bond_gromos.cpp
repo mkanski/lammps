@@ -15,9 +15,9 @@
    Contributing author: Axel Kohlmeyer (Temple U)
 ------------------------------------------------------------------------- */
 
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include "bond_gromos.h"
 #include "atom.h"
 #include "neighbor.h"
@@ -190,7 +190,7 @@ void BondGromos::write_data(FILE *fp)
 
 /* ---------------------------------------------------------------------- */
 
-double BondGromos::single(int type, double rsq, int i, int j,
+double BondGromos::single(int type, double rsq, int /*i*/, int /*j*/,
                         double &fforce)
 {
   double dr = rsq - r0[type]*r0[type];
@@ -204,7 +204,7 @@ double BondGromos::single(int type, double rsq, int i, int j,
 void *BondGromos::extract( char *str, int &dim )
 {
   dim = 1;
-  if( strcmp(str,"kappa")==0) return (void*) k;
-  if( strcmp(str,"r0")==0) return (void*) r0;
+  if (strcmp(str,"kappa")==0) return (void*) k;
+  if (strcmp(str,"r0")==0) return (void*) r0;
   return NULL;
 }

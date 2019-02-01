@@ -20,7 +20,7 @@ DihedralStyle(charmm,DihedralCharmm)
 #ifndef LMP_DIHEDRAL_CHARMM_H
 #define LMP_DIHEDRAL_CHARMM_H
 
-#include <stdio.h>
+#include <cstdio>
 #include "dihedral.h"
 
 namespace LAMMPS_NS {
@@ -33,7 +33,7 @@ class DihedralCharmm : public Dihedral {
   virtual void coeff(int, char **);
   virtual void init_style();
   void write_restart(FILE *);
-  void read_restart(FILE *);
+  virtual void read_restart(FILE *);
   void write_data(FILE *);
 
  protected:

@@ -16,10 +16,10 @@
    Soft-core version: Agilio Padua (Univ Blaise Pascal & CNRS)
 ------------------------------------------------------------------------- */
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "pair_lj_cut_soft.h"
 #include "atom.h"
 #include "comm.h"
@@ -566,6 +566,9 @@ double PairLJCutSoft::init_one(int i, int j)
     epsilon[i][j] = mix_energy(epsilon[i][i],epsilon[j][j],
                                sigma[i][i],sigma[j][j]);
     sigma[i][j] = mix_distance(sigma[i][i],sigma[j][j]);
+    if (lambda[i][i] != lambda[j][j])
+      error->all(FLERR,"Pair lj/cut/soft different lambda values in mix");
+    lambda[i][j] = lambda[i][i];
     cut[i][j] = mix_distance(cut[i][i],cut[j][j]);
   }
 
@@ -735,8 +738,8 @@ void PairLJCutSoft::write_data_all(FILE *fp)
 
 /* ---------------------------------------------------------------------- */
 
-double PairLJCutSoft::single(int i, int j, int itype, int jtype, double rsq,
-                         double factor_coul, double factor_lj,
+double PairLJCutSoft::single(int /*i*/, int /*j*/, int itype, int jtype, double rsq,
+                         double /*factor_coul*/, double factor_lj,
                          double &fforce)
 {
   double forcelj,philj;

@@ -61,6 +61,11 @@ class Atom : protected Pointers {
   double *radius,*rmass;
   int *ellipsoid,*line,*tri,*body;
 
+  // SPIN package
+
+  double **sp;
+  double **fm;
+
   // PERI package
 
   double *vfrac,*s0;
@@ -145,6 +150,10 @@ class Atom : protected Pointers {
   int cs_flag,csforce_flag,vforce_flag,ervelforce_flag,etag_flag;
   int rho_flag,e_flag,cv_flag,vest_flag;
   int dpd_flag,edpd_flag,tdpd_flag;
+
+  //USER-SPIN package
+
+  int sp_flag;
 
   // USER-SMD package
 
@@ -486,12 +495,6 @@ E: Atom sort did not operate correctly
 
 This is an internal LAMMPS error.  Please report it to the
 developers.
-
-E: Atom sorting has bin size = 0.0
-
-The neighbor cutoff is being used as the bin size, but it is zero.
-Thus you must explicitly list a bin size in the atom_modify sort
-command or turn off sorting.
 
 E: Too many atom sorting bins
 

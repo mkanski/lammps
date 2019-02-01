@@ -20,7 +20,7 @@ PairStyle(hybrid,PairHybrid)
 #ifndef LMP_PAIR_HYBRID_H
 #define LMP_PAIR_HYBRID_H
 
-#include <stdio.h>
+#include <cstdio>
 #include "pair.h"
 
 namespace LAMMPS_NS {
@@ -32,6 +32,7 @@ class PairHybrid : public Pair {
   friend class Force;
   friend class Respa;
   friend class Info;
+  friend class PairDeprecated;
  public:
   PairHybrid(class LAMMPS *);
   virtual ~PairHybrid();
