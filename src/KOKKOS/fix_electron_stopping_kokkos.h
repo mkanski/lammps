@@ -18,28 +18,33 @@
 
 #ifdef FIX_CLASS
 // clang-format off
-FixStyle(electron/stopping,FixElectronStopping);
+FixStyle(electron/stopping/kk,FixElectronStoppingKokkos<LMPDeviceType>);
+FixStyle(electron/stopping/kk/device,FixElectronStoppingKokkos<LMPDeviceType>);
+FixStyle(electron/stopping/kk/host,FixElectronStoppingKokkos<LMPHostType>);
 // clang-format on
 #else
 
-#ifndef LMP_FIX_ELECTRON_STOPPING_H
-#define LMP_FIX_ELECTRON_STOPPING_H
+#ifndef LMP_FIX_ELECTRON_STOPPING_KOKKOS_H
+#define LMP_FIX_ELECTRON_STOPPING_KOKKOS_H
 
-#include "fix.h"
+#include "fix_electron_stopping.h"
+#include "kokkos_type.h"
 
 namespace LAMMPS_NS {
 
-class FixElectronStopping : public Fix {
+template<class DeviceType>
+class FixElectronStoppingKokkos : public FixElectronStopping {
  public:
-  FixElectronStopping(class LAMMPS *, int, char **);
-  ~FixElectronStopping() override;
-  int setmask() override;
-  void init() override;
-  void post_force(int) override;
-  void init_list(int, class NeighList *) override;
-  double compute_scalar() override;
+  FixElectronStoppingKokkos(class LAMMPS *, int, char **);
+  ~FixElectronStoppingKokkos() override;
+//  int setmask() override;
+//  void init() override;
+//  void post_force(int) override;
+//  void init_list(int, class NeighList *) override;
+//  double compute_scalar() override;
 
- protected:
+ private:
+/*
   void read_table(const char *);
   void grow_table();
 
@@ -57,6 +62,7 @@ class FixElectronStopping : public Fix {
   int minneigh;            // minimum number of neighbors
 
   class NeighList *list;
+*/
 };
 
 }    // namespace LAMMPS_NS
