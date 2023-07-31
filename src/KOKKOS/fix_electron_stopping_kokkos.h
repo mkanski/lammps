@@ -32,18 +32,42 @@ FixStyle(electron/stopping/kk/host,FixElectronStoppingKokkos<LMPHostType>);
 
 namespace LAMMPS_NS {
 
+struct TagFixElectronStopping{};
+
 template<class DeviceType>
 class FixElectronStoppingKokkos : public FixElectronStopping {
  public:
+  typedef ArrayTypes<DeviceType> AT;
+
   FixElectronStoppingKokkos(class LAMMPS *, int, char **);
   ~FixElectronStoppingKokkos() override;
+  void init() override;
 //  int setmask() override;
-//  void init() override;
-//  void post_force(int) override;
+  void post_force(int) override;
 //  void init_list(int, class NeighList *) override;
 //  double compute_scalar() override;
 
+   KOKKOS_INLINE_FUNCTION
+   void operator()(TagFixElectronStopping, const int&) const;
+
  private:
+  typename AT::t_v_array v;
+  typename AT::t_f_array f;
+  typename AT::t_int_1d_randomread mask;
+  typename AT::t_int_1d_randomread type;
+  typename AT::t_float_1d mass;
+  typename AT::t_float_1d rmass;
+  typename AT::t_tagint_1d tag;
+  typename AT::t_int_1d_randomread d_numneigh;
+
+  Kokkos::DualView<double**, Kokkos::LayoutRight, DeviceType> k_elstop_ranges;
+  Kokkos::DualView<int, Kokkos::LayoutRight, DeviceType> k_table_entries;
+  Kokkos::DualView<int, Kokkos::LayoutRight, DeviceType> k_mvv2e;
+  Kokkos::DualView<int, Kokkos::LayoutRight, DeviceType> k_minneigh;
+  Kokkos::DualView<int, Kokkos::LayoutRight, DeviceType> k_Ecut;
+  
+  class NeighList *list2;
+
 /*
   void read_table(const char *);
   void grow_table();
