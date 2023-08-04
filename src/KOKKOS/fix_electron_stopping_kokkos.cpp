@@ -70,6 +70,8 @@ template<class DeviceType>
 void FixElectronStoppingKokkos<DeviceType>::init()
 {
   //FixElectronStopping::init();
+  SeLoss = 0.0;
+  SeLoss_sync_flag = 0;
 
   if (utils::strmatch(update->integrate_style,"^respa"))
     error->all(FLERR,"Cannot (yet) use respa with Kokkos");
@@ -106,7 +108,7 @@ void FixElectronStoppingKokkos<DeviceType>::init()
 template<class DeviceType>
 void FixElectronStoppingKokkos<DeviceType>::post_force(int)
 {
-
+  SeLoss_sync_flag = 0;
   //find neighbor list from a pair style
   if (list2 == nullptr) {
     for (int i = 0; i < neighbor->nlist; i++) {
@@ -120,6 +122,7 @@ void FixElectronStoppingKokkos<DeviceType>::post_force(int)
   }
 
   NeighListKokkos<DeviceType>* k_list = static_cast<NeighListKokkos<DeviceType>*>(list2);
+  d_ilist = k_list->d_ilist;
   d_numneigh = k_list->d_numneigh;
 
   v = atomKK->k_v.view<DeviceType>();
@@ -137,23 +140,31 @@ void FixElectronStoppingKokkos<DeviceType>::post_force(int)
   
   int nlocal = atom->nlocal;
 
+
+  double curr_SeLoss;
+
   copymode = 1;
-  Kokkos::parallel_for(Kokkos::RangePolicy<DeviceType, TagFixElectronStopping>(0, nlocal), *this);
+  Kokkos::parallel_reduce(Kokkos::RangePolicy<DeviceType, TagFixElectronStopping>(0, nlocal), *this, curr_SeLoss);
   copymode = 0;
+
+  SeLoss += curr_SeLoss*update->dt;
 
   atomKK->modified(execution_space, F_MASK);
 }
 
 template<class DeviceType>
 KOKKOS_INLINE_FUNCTION
-void FixElectronStoppingKokkos<DeviceType>::operator()(TagFixElectronStopping, const int &i) const {
+void FixElectronStoppingKokkos<DeviceType>::operator()(TagFixElectronStopping, const int &ii, double& curr_SeLoss) const {
 
+  int i = d_ilist[ii];
   // Do fast checks first, only then the region check
   if (!(mask[i] & groupbit))
     return;
 
+  
+
   // Avoid atoms outside bulk material
-  if (d_numneigh[i] < k_minneigh.d_view())
+  if (d_numneigh(i) < k_minneigh.d_view())
     return;
 
   int itype = type[i];
@@ -194,6 +205,8 @@ void FixElectronStoppingKokkos<DeviceType>::operator()(TagFixElectronStopping, c
   f(i,0) += v(i,0) * factor;
   f(i,1) += v(i,1) * factor;
   f(i,2) += v(i,2) * factor;
+
+  curr_SeLoss += Se * vabs; //multiplication by dt after reduce
    
 }
 

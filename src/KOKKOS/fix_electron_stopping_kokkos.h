@@ -48,7 +48,7 @@ class FixElectronStoppingKokkos : public FixElectronStopping {
 //  double compute_scalar() override;
 
    KOKKOS_INLINE_FUNCTION
-   void operator()(TagFixElectronStopping, const int&) const;
+   void operator()(TagFixElectronStopping, const int&, double&) const;
 
  private:
   typename AT::t_v_array v;
@@ -58,6 +58,7 @@ class FixElectronStoppingKokkos : public FixElectronStopping {
   typename AT::t_float_1d mass;
   typename AT::t_float_1d rmass;
   typename AT::t_tagint_1d tag;
+  typename AT::t_int_1d_randomread d_ilist;
   typename AT::t_int_1d_randomread d_numneigh;
 
   Kokkos::DualView<double**, Kokkos::LayoutRight, DeviceType> k_elstop_ranges;
