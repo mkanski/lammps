@@ -57,7 +57,6 @@ class FixElectronStoppingKokkos : public FixElectronStopping {
   typename AT::t_int_1d_randomread type;
   typename AT::t_float_1d mass;
   typename AT::t_float_1d rmass;
-  typename AT::t_tagint_1d tag;
   typename AT::t_int_1d_randomread d_ilist;
   typename AT::t_int_1d_randomread d_numneigh;
 
@@ -66,8 +65,6 @@ class FixElectronStoppingKokkos : public FixElectronStopping {
   Kokkos::DualView<int, Kokkos::LayoutRight, DeviceType> k_mvv2e;
   Kokkos::DualView<int, Kokkos::LayoutRight, DeviceType> k_minneigh;
   Kokkos::DualView<int, Kokkos::LayoutRight, DeviceType> k_Ecut;
-  
-  class NeighList *list2;
 
 /*
   void read_table(const char *);

@@ -26,6 +26,7 @@
 #include "force.h"
 #include "memory_kokkos.h"
 #include "neigh_list.h"
+#include "neigh_request.h"
 #include "neighbor.h"
 #include "potential_file_reader.h"
 #include "region.h"
@@ -73,6 +74,12 @@ void FixElectronStoppingKokkos<DeviceType>::init()
   SeLoss = 0.0;
   SeLoss_sync_flag = 0;
 
+  auto request = neighbor->add_request(this, NeighConst::REQ_FULL);
+  request->set_kokkos_host(std::is_same_v<DeviceType,LMPHostType> &&
+                         !std::is_same_v<DeviceType,LMPDeviceType>);
+  request->set_kokkos_device(std::is_same_v<DeviceType,LMPDeviceType>);
+  request->enable_full();
+
   if (utils::strmatch(update->integrate_style,"^respa"))
     error->all(FLERR,"Cannot (yet) use respa with Kokkos");
 
@@ -102,26 +109,14 @@ void FixElectronStoppingKokkos<DeviceType>::init()
   k_Ecut.template modify<LMPHostType>();
   k_Ecut.template sync<DeviceType>();
 
-  list2 = nullptr;
 }
 
 template<class DeviceType>
 void FixElectronStoppingKokkos<DeviceType>::post_force(int)
 {
   SeLoss_sync_flag = 0;
-  //find neighbor list from a pair style
-  if (list2 == nullptr) {
-    for (int i = 0; i < neighbor->nlist; i++) {
-      if (neighbor->lists[i]->requestor_type == NeighList::PAIR && neighbor->lists[i]->kokkos) {
-        list2 = neighbor->lists[i];
-        break;
-      }
-    }
-    if (list2 == nullptr)
-      error->all(FLERR, "Fix electron/stopping/kk requires a Kokkos pair_style");
-  }
-
-  NeighListKokkos<DeviceType>* k_list = static_cast<NeighListKokkos<DeviceType>*>(list2);
+  
+  NeighListKokkos<DeviceType>* k_list = static_cast<NeighListKokkos<DeviceType>*>(list);
   d_ilist = k_list->d_ilist;
   d_numneigh = k_list->d_numneigh;
 
@@ -131,20 +126,18 @@ void FixElectronStoppingKokkos<DeviceType>::post_force(int)
   type = atomKK->k_type.view<DeviceType>();
   mass = atomKK->k_mass.view<DeviceType>();
   rmass = atomKK->k_rmass.view<DeviceType>();
-  tag = atomKK->k_tag.view<DeviceType>();
 
   if (rmass.data())
-    atomKK->sync(execution_space, V_MASK | F_MASK | MASK_MASK | RMASS_MASK | TAG_MASK);
+    atomKK->sync(execution_space, V_MASK | F_MASK | MASK_MASK | RMASS_MASK);
   else
-    atomKK->sync(execution_space, V_MASK | F_MASK | MASK_MASK | TYPE_MASK | TAG_MASK);
+    atomKK->sync(execution_space, V_MASK | F_MASK | MASK_MASK | TYPE_MASK);
   
-  int nlocal = atom->nlocal;
-
+  int inum = list->inum;
 
   double curr_SeLoss;
 
   copymode = 1;
-  Kokkos::parallel_reduce(Kokkos::RangePolicy<DeviceType, TagFixElectronStopping>(0, nlocal), *this, curr_SeLoss);
+  Kokkos::parallel_reduce(Kokkos::RangePolicy<DeviceType, TagFixElectronStopping>(0, inum), *this, curr_SeLoss);
   copymode = 0;
 
   SeLoss += curr_SeLoss*update->dt;
@@ -160,7 +153,6 @@ void FixElectronStoppingKokkos<DeviceType>::operator()(TagFixElectronStopping, c
   // Do fast checks first, only then the region check
   if (!(mask[i] & groupbit))
     return;
-
   
 
   // Avoid atoms outside bulk material
@@ -206,7 +198,7 @@ void FixElectronStoppingKokkos<DeviceType>::operator()(TagFixElectronStopping, c
   f(i,1) += v(i,1) * factor;
   f(i,2) += v(i,2) * factor;
 
-  curr_SeLoss += Se * vabs; //multiplication by dt after reduce
+  curr_SeLoss = Se * vabs; //multiplication by dt after reduce
    
 }
 
