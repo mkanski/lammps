@@ -1528,6 +1528,7 @@ inhomogeneous
 init
 initialdelay
 initialisms
+initializer
 initializations
 InitiatorIDs
 initio
@@ -2228,6 +2229,7 @@ monolayer
 monopole
 monovalent
 Montalenti
+Monterey
 Montero
 Monti
 Mora
@@ -3488,6 +3490,7 @@ supercell
 superset
 supersphere
 Supinski
+Sur
 Surblys
 surfactant
 surfactants
@@ -3619,6 +3622,7 @@ Tk
 Tkin
 tloop
 tlsph
+tm
 tmax
 Tmax
 tmd
@@ -3635,6 +3639,7 @@ tokyo
 tol
 tomic
 toolchain
+toolset
 topologies
 Toporov
 Torder
@@ -3833,6 +3838,7 @@ vectorized
 Vegt
 vel
 Velázquez
+Ventura
 venv
 Verlag
 verlet
@@ -4090,6 +4096,7 @@ zmq
 zN
 zs
 zsc
+Zsh
 zst
 Zstandard
 zstd
